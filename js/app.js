@@ -91,8 +91,7 @@ function ImageSwiper({ images, aspect, borderRadius, showCounter }) {
     const dy = e.touches[0].clientY - tys;
     if(Math.abs(dx) > Math.abs(dy)) { e.stopPropagation(); setTxd(dx); }
   }
-  function hTE(e) {
-    if(Math.abs(txd) > 10) e.stopPropagation();
+  function hTE() {
     if(!dragging) return;
     if(txd < -40 && idx < 1) setIdx(1);
     else if(txd > 40 && idx > 0) setIdx(0);
