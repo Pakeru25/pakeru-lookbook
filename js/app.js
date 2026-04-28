@@ -504,6 +504,32 @@ function Lookbook({ products, settings }) {
     setTimeout(()=>{ setCi(ni); setDir(null); setAnim(false); }, 500);
   }, [anim, products.length]);
 
+  // Refs so the document-level capture handler always sees current values
+  const ciRef = useRef(ci);
+  const goToRef = useRef(goTo);
+  useEffect(() => { ciRef.current = ci; }, [ci]);
+  useEffect(() => { goToRef.current = goTo; }, [goTo]);
+
+  // Full-viewport vertical swipe — capture phase bypasses ImageSwiper's stopPropagation
+  useEffect(() => {
+    if (phase !== "gallery") return;
+    let startY = null;
+    function onDocTS(e) { startY = e.touches[0].clientY; }
+    function onDocTE(e) {
+      if (startY === null) return;
+      const diff = startY - e.changedTouches[0].clientY;
+      if (diff > 50) goToRef.current(ciRef.current + 1, "up");
+      else if (diff < -50) goToRef.current(ciRef.current - 1, "down");
+      startY = null;
+    }
+    document.addEventListener("touchstart", onDocTS, { passive: true, capture: true });
+    document.addEventListener("touchend", onDocTE, { passive: true, capture: true });
+    return () => {
+      document.removeEventListener("touchstart", onDocTS, { capture: true });
+      document.removeEventListener("touchend", onDocTE, { capture: true });
+    };
+  }, [phase]);
+
   function onTS(e) { if(anim) return; setTsy(e.touches[0].clientY); setDragY(true); }
   function onTM(e) { if(!dragY||tsy===null) return; setTdy(e.touches[0].clientY - tsy); }
   function onTE() {
