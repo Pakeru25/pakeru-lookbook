@@ -77,20 +77,26 @@ function Wordmark({ height, onClick, style }) {
 function ImageSwiper({ images, aspect, borderRadius, showCounter }) {
   const [idx, setIdx] = useState(0);
   const [txs, setTxs] = useState(null);
+  const [tys, setTys] = useState(null);
   const [txd, setTxd] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [loaded, setLoaded] = useState({});
 
   useEffect(() => { setIdx(0); setLoaded({}); }, [images && images[0]]);
 
-  function hTS(e) { e.stopPropagation(); setTxs(e.touches[0].clientX); setDragging(true); }
-  function hTM(e) { if(!dragging||txs===null) return; e.stopPropagation(); setTxd(e.touches[0].clientX - txs); }
+  function hTS(e) { setTxs(e.touches[0].clientX); setTys(e.touches[0].clientY); setDragging(true); }
+  function hTM(e) {
+    if(!dragging||txs===null||tys===null) return;
+    const dx = e.touches[0].clientX - txs;
+    const dy = e.touches[0].clientY - tys;
+    if(Math.abs(dx) > Math.abs(dy)) { e.stopPropagation(); setTxd(dx); }
+  }
   function hTE(e) {
-    e.stopPropagation();
+    if(Math.abs(txd) > 10) e.stopPropagation();
     if(!dragging) return;
     if(txd < -40 && idx < 1) setIdx(1);
     else if(txd > 40 && idx > 0) setIdx(0);
-    setTxs(null); setTxd(0); setDragging(false);
+    setTxs(null); setTys(null); setTxd(0); setDragging(false);
   }
   function hClick() { setIdx(idx === 0 ? 1 : 0); }
 
